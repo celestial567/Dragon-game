@@ -1,1 +1,77 @@
-# Dragon-game
+# Dragon-import pygame
+import random
+
+# Initialize pygame
+pygame.init()
+
+# Game Constants
+WIDTH, HEIGHT = 800, 600
+BG_COLOR = (50, 50, 50)  # Dark Background
+DRAGON_COLOR = (200, 0, 0)  # Red Dragon
+HUMAN_COLOR = (255, 255, 255)  # White Humans
+DRAGON_SPEED = 5
+HUMAN_COUNT = 5
+
+# Create Game Window
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Dragon's Hunger")
+
+# Dragon (Player)
+dragon_size = 40
+dragon_x, dragon_y = WIDTH // 2, HEIGHT // 2
+
+# Human (Prey) List
+humans = []
+for _ in range(HUMAN_COUNT):
+    x = random.randint(50, WIDTH - 50)
+    y = random.randint(50, HEIGHT - 50)
+    humans.append(pygame.Rect(x, y, 20, 20))
+
+# Game Loop
+running = True
+clock = pygame.time.Clock()
+
+while running:
+    screen.fill(BG_COLOR)
+    
+    # Event Handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Player Movement
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and dragon_x > 0:
+        dragon_x -= DRAGON_SPEED
+    if keys[pygame.K_RIGHT] and dragon_x < WIDTH - dragon_size:
+        dragon_x += DRAGON_SPEED
+    if keys[pygame.K_UP] and dragon_y > 0:
+        dragon_y -= DRAGON_SPEED
+    if keys[pygame.K_DOWN] and dragon_y < HEIGHT - dragon_size:
+        dragon_y += DRAGON_SPEED
+
+    # Update Dragon Rect
+    dragon_rect = pygame.Rect(dragon_x, dragon_y, dragon_size, dragon_size)
+
+    # Draw Dragon
+    pygame.draw.rect(screen, DRAGON_COLOR, dragon_rect)
+
+    # Draw and Check for Eating Humans
+    for human in humans[:]:  # Iterate over a copy of the list
+        pygame.draw.rect(screen, HUMAN_COLOR, human)
+        if dragon_rect.colliderect(human):  # Collision Detection
+            humans.remove(human)
+            dragon_size += 5  # Grow on eating
+
+    # Respawn Humans if all are eaten
+    if not humans:
+        for _ in range(HUMAN_COUNT):
+            x = random.randint(50, WIDTH - 50)
+            y = random.randint(50, HEIGHT - 50)
+            humans.append(pygame.Rect(x, y, 20, 20))
+
+    # Update Display
+    pygame.display.flip()
+    clock.tick(30)  # Limit FPS
+
+pygame.quit()
